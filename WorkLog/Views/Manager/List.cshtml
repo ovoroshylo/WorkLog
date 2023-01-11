@@ -1,0 +1,147 @@
+﻿@model WorkLog.Models.Channel
+@{
+    ViewData["Title"] = "Create Channel";
+    ViewData["HeaderTitle"] = "work log";
+}
+<!--
+To Do list
+1. change alert into bootstrap alert.
+2. We should cancel unaccepted users invitation.
+3. Show not just email but user name in the list.
+-->
+<script>
+    function addUser(channelUser) {
+        let jObject = $('<a href="#" class="list-group-item list-group-item-action">' + channelUser.userEmail + '</a>');
+        if (channelUser.state === 0)
+            $("#unAcceptedUsers").append(jObject);
+        else
+            $("#acceptedUsers").append(jObject);
+    }
+
+    $(document).ready(function () {
+        $(".channel-list").on("click", function () {
+            $(this).siblings().removeClass("active custom-background");
+            $(this).addClass("active custom-background");
+            $.post({
+                url: "/api/ChannelAPI/getUsers",
+                data: {
+                    channelId: $(this).attr("data-channel-id")
+                }
+            }, function (users) {
+                $("#unAcceptedUsers").empty();
+                $("#acceptedUsers").empty();
+                users.forEach(function (channelUser) {
+                    addUser(channelUser);
+                });
+            });
+        });
+        $(".channel-list").on("click", "button", function () {
+            $("#channelModal").attr("data-channel-id", $(this).parent().attr("data-channel-id"));
+            $("#channelModal").modal('show');
+        });
+        $("#invite_user").validate({
+            submitHandler: function () {
+                let channelUser = {
+                    channelId: $("#channelModal").attr("data-channel-id"),
+                    userEmail: $("input[name='Email']").val(),
+                    state: 0
+                };
+                $.post({
+                    url: "/api/ChannelAPI/inviteUser",
+                    data: channelUser
+                }, function (res) {
+                    switch (res) {
+                        case -4:
+                            alert("User does not exist");
+                            break;
+                        case -3:
+                            alert("Model is not valid");
+                            break;
+                        case -2:
+                            alert("Can't invite yourself");
+                            break;
+                        case -1:
+                            alert("ChannelId does not exist");
+                            break;
+                        case 0:
+                            alert("Already invited");
+                            break;
+                        case 1:
+                            $("#channelModal").modal('hide');
+                            addUser(channelUser);
+                            break;
+                    }
+                })
+            }
+        });
+
+    });
+</script>
+<div class="container">
+    <br /><br />
+    <div class="py-3">
+        <span class="mx-auto fs-3 d-flex flex-wrap justify-content-center">Manage Channel</span>
+        <hr>
+    </div>
+    <div class="row py-3">
+        <div class="col-md-4">
+            <span class="fs-3 d-flex flex-wrap justify-content-center"><b>Channel list</b></span>
+            <br />
+            <div class="d-flex flex-wrap justify-content-center align-items-center">
+                <div class="list-group custom-form">
+                    @foreach (var channel in ViewData["Channels"] as IList<Channel>)
+                    {
+                        <a class="list-group-item list-group-item-action d-flex gap-3 py-3 justify-content-between channel-list" aria-current="true" data-channel-id="@channel.Id">
+                            <span class="fs-5">@channel.Name</span>
+                            <button class="btn btn-sm btn-primary" type="submit">invite</button>
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <span class="mx-auto fs-3 d-flex flex-wrap justify-content-center"><b>Accepted users</b></span>
+            <br />
+            <div class="d-flex flex-wrap justify-content-center align-items-center">
+                <div class="list-group custom-form" id="acceptedUsers">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <span class="mx-auto fs-3 d-flex flex-wrap justify-content-center"><b>Unaccepted users</b></span>
+            <br />
+            <div class="d-flex flex-wrap justify-content-center align-items-center">
+                <div class="list-group custom-form" id="unAcceptedUsers">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" role="dialog" id="channelModal" data-channel-id="">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content rounded-4 shadow">
+            <div class="modal-header p-5 pb-4 border-bottom-0">
+                <!-- <h1 class="modal-title fs-5" >Modal title</h1> -->
+                <h1 class="fw-bold mb-0 fs-2">Invite users</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-5 pt-0">
+                <form id="invite_user">
+                    <div class="form-floating mb-3">
+                        <input type="email" class="form-control rounded-3" name="Email" id="Email" placeholder="name@example.com" required>
+                    </div>
+                    @*<div class="form-floating mb-3">
+                    <input type="email" class="form-control rounded-3" id="floatingInput" placeholder="name" readonly>
+                    <label for="floatingInput">Name</label>
+                    </div>*@
+                    <button class="w-100 py-2 mb-2 btn btn-outline-primary rounded-3" type="submit">
+                        Invite here!
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

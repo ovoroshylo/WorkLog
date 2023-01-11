@@ -1,0 +1,125 @@
+﻿@model WorkLog.Models.ChannelUserDTO
+
+@{
+    ViewData["Title"] = "Add Channel";
+    ViewData["HeaderTitle"] = "work log";
+}
+<script>
+    $(document).ready(function () {
+        let currentChannelUser = {};
+        $("#invitation-list").on('click', ".invitation-list", function () {
+
+            currentChannelUser = {
+                questions: $(this).attr('data-questions').split(",#"),
+                invitationId: $(this).attr('data-invitation-id'),
+                managerEmail: $(this).attr('data-manager-email'),
+                channelName: $(this).attr('data-channel-name'),
+                channelId: $(this).attr('data-channel-id')
+            };
+
+            //initialize channelModal
+            $("#channelModal .modal-body").empty();
+            $("#channelModal .modal-body").append(`<h4 class="mb-3 text-center">${currentChannelUser.channelName}</h4><hr>`);
+            currentChannelUser.questions.forEach(function (question, index) {
+                $("#channelModal .modal-body").append(`<p class="mb-0 fs-5"><b>Question ${index + 1}</b></p>`);
+                $("#channelModal .modal-body").append(`<p class="mb-1">${question}</p><hr>`);
+            });
+            $("#channelModal .modal-body").append(`<p class="mb-1 fs-5"><b>Email : </b>${currentChannelUser.managerEmail}</p>`);
+
+        });
+
+        $("#Accept").on('click', function(){
+            $.post({
+                url: '/api/ChannelAPI/acceptInvite',
+                data: {
+                    invitationId: currentChannelUser.invitationId
+                }
+            }, function(res){
+                if (res == true)
+                {
+                    $(`.invitation-list[data-invitation-id='${currentChannelUser.invitationId}']`).remove();
+                    $("#available-list").append(`
+                                <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3 justify-content-between available-list" aria-current="true" data-channel-id="${currentChannelUser.channelId}">
+                                <span class="fs-5">${currentChannelUser.channelName}</span>
+                            <button class="btn btn-sm btn-primary" type="submit">Join</button>
+                        </a>
+                    `);
+                    $("#channelModal").modal('hide');
+                }
+            });
+        });
+
+        $("#available-list").on("click", ".available-list button", function(){
+            let channelId = $(this).parent().attr('data-channel-id');
+            $.post({
+                url: '/api/ChannelAPI/joinChannel',
+                data: {
+                    channelId
+                }
+            }, function(res){
+                location.href = "/Worklog/Answer";
+            });
+        });
+    });
+</script>
+<div class="container">
+    <br /><br />
+    <div class="py-3">
+        <span class="mx-auto fs-3 d-flex flex-wrap justify-content-center">Add Channel</span>
+        <hr>
+    </div>
+    <div class="row py-3">
+        <div class="col-md-6">
+            <span class="mx-auto fs-3 d-flex flex-wrap justify-content-center"><b>Invitations</b></span>
+            <br />
+            <div class="d-flex flex-wrap justify-content-center align-items-center">
+                <div class="list-group" id="invitation-list">
+                    @{
+                        int index = 0;
+                    }
+                    @foreach (var channelUser in ViewData["ChannelUsers"] as IList<ChannelUserDTO>)
+                    {
+                        if (channelUser.State == 0)
+                        {
+                            <a class="list-group-item list-group-item-action d-flex gap-3 py-3 justify-content-between invitation-list" aria-current="true" data-channel-id="@channelUser.Id" data-channel-name="@channelUser.Name" data-questions="@channelUser.Questions" data-invitation-id="@channelUser.InvitationId" data-manager-email="@channelUser.Manager_email">
+                                <span class="fs-5">@channelUser.Name</span>
+                                <button class="btn btn-sm btn-primary" type="submit" data-bs-toggle="modal" data-bs-target="#channelModal">Join</button>
+                            </a>
+                        }
+                        index++;
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <span class="mx-auto fs-3 d-flex flex-wrap justify-content-center"><b>Available</b></span>
+            <br />
+            <div class="d-flex flex-wrap justify-content-center align-items-center">
+                <div class="list-group" id="available-list">
+                    @foreach (var channelUser in ViewData["ChannelUsers"] as IList<ChannelUserDTO>)
+                    {
+                        if (channelUser.State == 1)
+                        {
+                            <a class="list-group-item list-group-item-action d-flex gap-3 py-3 justify-content-between available-list" aria-current="true" data-channel-id="@channelUser.Id">
+                                <span class="fs-5">@channelUser.Name</span>
+                                <button class="btn btn-sm btn-primary" type="submit">Join</button>
+                            </a>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="channelModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content rounded-3 shadow">
+            <div class="modal-body p-4">
+            </div>
+            <div class="modal-footer flex-nowrap p-0">
+                <button type="button" class="btn btn-lg btn-link fs-6 text-decoration-none col-6 m-0 rounded-0 border-end" id="Accept"><strong>Accept</strong></button>
+                <button type="button" class="btn btn-lg btn-link fs-6 text-decoration-none col-6 m-0 rounded-0" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>

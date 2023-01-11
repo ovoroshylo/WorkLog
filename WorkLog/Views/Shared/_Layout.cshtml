@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - WorkLog</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/WorkLog.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.2.1/css/all.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery-infinite-scroll/infinite-scroll.pkgd.min.js"></script>
+    
+    <script src="~/lib/word-cloud/wordcloud2.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.6/Chart.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</head>
+<body>
+    <header class="p-3 text-bg-primary">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+                <a class="d-flex align-items-center mb-2 mb-lg-0 me-md-auto text-white text-decoration-none">
+                    <img src="~/img/leaf-32.ico" alt="logo">
+                    <span class="fs-4">&nbsp;&nbsp;@ViewData["HeaderTitle"]</span>
+                </a>
+                <ul class="nav nav-pills">
+                    <li class="nav-item"><a href="#" class="nav-link px-2 text-white">Home</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link px-2 text-white">About</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link px-2 text-white">How to</a></li>
+                    @if (User!.Identity!.IsAuthenticated)
+                    {
+                        <li class="nav-item"><a href="#" class="nav-link px-2 text-white">Contact Us</a></li>
+                        <li class="nav-item dropdown">
+                            <a href="#" class="nav-link px-2 text-white dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Performance Insights</a>
+                            <ul class="dropdown-menu text-small">
+                                <li>
+                                    <a class="dropdown-item" href="/WorkLog/Search">Search</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/WorkLog/Compare">Compare</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/WorkLog/Review">Review</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item"><a href="#" class="nav-link px-2 text-white">Feedback</a></li>
+                        <li class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle text-white" data-bs-toggle="dropdown" aria-expanded="false">
+                                Hi @User.Identity.Name
+                            </a>
+                            <ul class="dropdown-menu text-small">
+                                <li>
+                                    <a class="dropdown-item" href="#">Account Settings</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/Channel/AddChannel">Add Channel</a>
+                                </li>
+                                @if (User!.IsInRole("Manager"))
+                                {
+                                    <li class="dropdown">
+                                        <a class="dropdown-item" href="#">Manager Panel</a>
+                                        <ul>
+                                            <li><a class="dropdown-item" href="/Manager/Create">Create Channel</a></li>
+                                            <li><a class="dropdown-item" href="/Manager/List">Channel List</a></li>
+                                        </ul>
+                                    </li>
+                                }
+                                <li>
+                                    <a class="dropdown-item" href="/Auth/SignOut">Sign Out</a>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </header>
+    <div class="container">
+        @RenderBody()
+    </div>
+    <footer class="py-2 text-bg-primary fixed-bottom">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center justify-content-center">
+                <span class="text-center text-white fs-5">Work Log is free for individuals.</span>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

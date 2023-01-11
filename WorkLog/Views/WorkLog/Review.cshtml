@@ -1,0 +1,49 @@
+﻿@model WorkLog.Controllers.AnswerViewModel
+
+@{
+    ViewData["Title"] = "Review";
+    ViewData["HeaderTitle"] = "work log";
+}
+<script>
+    $(document).ready(function () {
+        const config = {
+            startDate: moment().startOf('hour'),
+            endDate: moment().startOf('hour').add(32, 'hour'),
+            locale: {
+                format: 'M/DD YYYY'
+            }
+        };
+        $("input[name='datetimes']").daterangepicker(config, function (startDate, endDate) {
+            $.post({
+                url: "/api/WorkLogAPI/getByDateRange",
+                data: {
+                    startDateStr: moment(startDate).format("MM/DD/YYYY"),
+                    endDateStr: moment(endDate).format("MM/DD/YYYY")
+                }
+            }, function (res) {
+                buildWordCloud("word_cloud", res || "");
+            });
+        });
+    });
+</script>
+<div class="row">
+    <br /><br />
+    <div class="py-3">
+        <div class="d-flex flex-wrap justify-content-center col-lg-6 col-md-8 mx-auto">
+            <p class="fs-2">
+            </p>
+        </div>
+        <div class="mb-3">
+            <div class="d-flex justify-content-center">
+                <span class="fs-5">Date between:&nbsp;&nbsp;</span>
+                <div class="mb-0">
+                    <input class="form-control search-bg" type="text" name="datetimes" />
+                </div>
+            </div>
+            <hr>
+        </div>
+        <div class="py-5 d-flex justify-content-center">
+            <div class="word-cloud" id="word_cloud">
+        </div>
+    </div>
+</div>
